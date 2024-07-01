@@ -1,12 +1,20 @@
 #include "ships.hpp"
 #include "utils.hpp"
+#include <algorithm>
+#include <cstdlib>
 #include <cwchar>
 #include <iostream>
+#include <iterator>
 #include <string>
+#include <type_traits>
 
 struct Strike {
   char x;
   char y;
+};
+struct Coordinets {
+  int x;
+  int y;
 };
 
 class Game {
@@ -56,7 +64,7 @@ public:
     }
   }
 
-  void placeShip(char board[][11], Commands commands, int length) {
+  bool placeShip(char board[][11], Commands commands, int length) {
     char numbersArray[] = {'*', '0', '1', '2', '3', '4',
                            '5', '6', '7', '8', '9'};
     char lettersArray[] = {'*', 'a', 'b', 'c', 'd', 'e',
@@ -75,11 +83,12 @@ public:
       validYD = Utils::checkCharArr(validYForDown, 11 - length, commands.y);
       validXL = true;
     }
-    std::cout << "validation of placment " << validYD << "  " << validXL
-              << "\n";
+    //std::cout << "validation of placment " << validYD << "  " << validXL
+    //          << "\n";
     if (validYD && validXL) {
 
       if (commands.dir == 'l') {
+        Coordinets shipArray[length];
         char placeXArray[length];
         int placeXArrayIndex = 0;
         for (int i = 1; i < 11; i++) {
@@ -88,23 +97,31 @@ public:
               if (numbersArray[j] == commands.x) {
                 if (board[i][j] == 'O') {
                   std::cout << "PLACED SHIPS COLIDED\n";
-                  exit(1);
+                  return false;
                 }
-                board[i][j] = 'O';
+                Coordinets coords{x : i, y : j};
+                shipArray[placeXArrayIndex] = coords;
                 placeXArrayIndex++;
 
-              } else if (placeXArrayIndex != 0 && placeXArrayIndex <= length) {
+              } else if (placeXArrayIndex != 0 && placeXArrayIndex < length) {
                 if (board[i][j] == 'O') {
                   std::cout << "PLACED SHIPS COLIDED\n";
-                  exit(1);
+                  return false;
                 }
-                board[i][j] = 'O';
+                Coordinets coords{x : i, y : j};
+                shipArray[placeXArrayIndex] = coords;
                 placeXArrayIndex++;
               }
             }
           }
         }
+
+        for (int i = 0; i < length; i++) {
+          board[shipArray[i].x][shipArray[i].y] = 'O';
+        }
+
       } else if (commands.dir == 'd') {
+        Coordinets shipArray[length];
 
         char placeYArray[length];
         int placeYArrayIndex = 0;
@@ -114,30 +131,44 @@ public:
               if (lettersArray[j] == commands.y) {
                 if (board[j][i] == 'O') {
                   std::cout << "PLACED SHIPS COLIDED\n";
-                  exit(1);
+                  return false;
                 }
-                board[j][i] = 'O';
+                Coordinets coords{x : i, y : j};
+                shipArray[placeYArrayIndex] = coords;
                 placeYArrayIndex++;
 
-              } else if (placeYArrayIndex != 0 && placeYArrayIndex <= length) {
+              } else if (placeYArrayIndex != 0 && placeYArrayIndex < length) {
                 if (board[j][i] == 'O') {
                   std::cout << "PLACED SHIPS COLIDED\n";
-                  exit(1);
+
+                  return false;
                 }
-                board[j][i] = 'O';
+                Coordinets coords{x : i, y : j};
+                shipArray[placeYArrayIndex] = coords;
                 placeYArrayIndex++;
               }
             }
           }
         }
+        for (int i = 0; i < length; i++) {
+          board[shipArray[i].x][shipArray[i].y] = 'O';
+        }
       }
+
     } else {
       std::cout << "NOT A VALID POSITION\n";
+      return false;
+    }
+    return true;
+  }
+
+  void conditionaldExit(bool val) {
+    if (!val) {
       exit(1);
     }
   }
 
-  void placeShipsLoop(char board[][11]) {
+  void placeShipsLoop(char board[][11], std::string userType) {
     int availibleShipsLength = 10;
     Commands commands;
     int availibleShips[] = {4, 3, 3, 2, 2, 2, 1, 1, 1, 1};
@@ -147,51 +178,99 @@ public:
 
     for (int i = 0; i < availibleShipsLength; i++) {
 
+      bool validPlacement = false;
       std::string command;
       switch (availibleShips[i]) {
       case 4:
-        std::cout << "chose the coordinates and the direction (d - down , l - "
-                  << "left) of your ship ex: 0al \n :";
-        std::cin >> command;
-        commands = utils.getCommands(command);
+        if (userType == "player") {
+          std::cout
+              << "chose the coordinates and the direction (d - down , l - "
+              << "left) of your ship ex: 0al \n :";
+          std::cin >> command;
+          commands = utils.getCommands(command);
+          validPlacement = this->placeShip(board, commands, 4);
+          conditionaldExit(validPlacement);
+        } else if (userType == "enemy") {
+          while (!validPlacement) {
+            //std::cout << "PLACED 4 \n";
+            commands = utils.genRandomCommands();
+            validPlacement = this->placeShip(board, commands, 4);
+          }
+        } else {
+          std::cout << "INVALID USER TYPE";
+          conditionaldExit(false);
+        }
         // invoke a checking and parsing commmand
-        this->placeShip(board, commands, 4);
-        readBoard(board);
         break;
       case 3:
-        std::cout << "chose the coordinates and the direction (d - down , l - "
-                  << "left) of your ship ex: 0al \n :";
-        std::cin >> command;
+        if (userType == "player") {
+          std::cout
+              << "chose the coordinates and the direction (d - down , l - "
+              << "left) of your ship ex: 0al \n :";
+          std::cin >> command;
+          commands = utils.getCommands(command);
+          this->placeShip(board, commands, 3);
+        } else if (userType == "enemy") {
+          while (!validPlacement) {
+            //std::cout << "PLACED 3\n";
+            commands = utils.genRandomCommands();
+            validPlacement = this->placeShip(board, commands, 3);
+          }
 
-        commands = utils.getCommands(command);
-        // invoke a checking and parsing commmand
-
-        this->placeShip(board, commands, 3);
-        readBoard(board);
+        } else {
+          std::cout << "INVALID USER TYPE";
+          conditionaldExit(false);
+        }
         break;
       case 2:
-        std::cout << "chose the coordinates and the direction (d - down , l - "
-                  << "left) of your ship ex: 0al \n :";
-        std::cin >> command;
+        if (userType == "player") {
+          std::cout
+              << "chose the coordinates and the direction (d - down , l - "
+              << "left) of your ship ex: 0al \n :";
+          std::cin >> command;
+          commands = utils.getCommands(command);
+          this->placeShip(board, commands, 2);
+        } else if (userType == "enemy") {
+          while (!validPlacement) {
 
-        commands = utils.getCommands(command);
-        // invoke a checking and parsing commmand
+            //std::cout <<  "PLACED 2\n";
+            commands = utils.genRandomCommands();
+            validPlacement = this->placeShip(board, commands, 2);
+          }
+        } else {
+          std::cout << "INVALID USER TYPE";
+          conditionaldExit(false);
+        }
 
-        this->placeShip(board, commands, 2);
-        readBoard(board);
         break;
 
       case 1:
-        std::cout << "chose the coordinates and the direction (d - down , l - "
-                  << "left) of your ship ex: 0al \n :";
-        std::cin >> command;
-        commands = utils.getCommands(command);
-        // invoke a checking and parsing commmand
-        this->placeShip(board, commands, 1);
-        readBoard(board);
+        if (userType == "player") {
+          std::cout
+              << "chose the coordinates and the direction (d - down , l - "
+              << "left) of your ship ex: 0al \n :";
+          std::cin >> command;
+          commands = utils.getCommands(command);
+          this->placeShip(board, commands, 1);
+        } else if (userType == "enemy") {
+          while (!validPlacement) {
+            //std::cout << "PLACED 1\n";
+            commands = utils.genRandomCommands();
+            validPlacement = this->placeShip(board, commands, 1);
+          }
+        } else {
+          std::cout << "INVALID USER TYPE";
+          conditionaldExit(false);
+        }
         break;
       }
+      if (userType == "player") {
+        readBoard(board);
+      }
     }
+  }
+  void genEnemyBoard(char enemyBoard[][11]) {
+    placeShipsLoop(enemyBoard, "enemy");
   }
 
   void gameLoop() {
@@ -200,7 +279,7 @@ public:
       readBoard(playerBoard);
 
       std::cout << "\nENEMY BOARD \n";
-      readBoard(playerBoard);
+      readBoard(enemyBoard);
 
       std::cout << "INPUT STRIKE X COORDS :";
       Strike strike;
@@ -213,9 +292,10 @@ public:
   Game() {
     makeBoard(playerBoard);
     readBoard(playerBoard);
-    placeShipsLoop(playerBoard);
+    placeShipsLoop(playerBoard, "player");
     makeBoard(enemyBoard);
-    gameLoop();
+    placeShipsLoop(enemyBoard, "enemy");
+    readBoard(enemyBoard);
   }
 };
 
