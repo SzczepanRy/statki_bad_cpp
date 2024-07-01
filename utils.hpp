@@ -23,13 +23,16 @@ public:
               return  true;
           }
       }
+
+      std::cout << "CHECK ARRAY FALED\n";
+
       return false;
   }
 
   bool vaildateCommand(std::string command) {
-    char numbersArray[] = {'a', '0', '1', '2', '3', '4',
+    char numbersArray[] = {'*', '0', '1', '2', '3', '4',
                            '5', '6', '7', '8', '9'};
-    char lettersArray[] = {'a', 'a', 'b', 'c', 'd', 'e',
+    char lettersArray[] = {'*', 'a', 'b', 'c', 'd', 'e',
                            'f', 'g', 'h', 'i', 'j'};
 
     char dirArray[] = {'l', 'd'};

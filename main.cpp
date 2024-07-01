@@ -4,6 +4,11 @@
 #include <iostream>
 #include <string>
 
+struct Strike {
+  char x;
+  char y;
+};
+
 class Game {
 
 public:
@@ -11,6 +16,7 @@ public:
   static const int BOARD_H = 11;
 
   char playerBoard[BOARD_H][BOARD_W];
+  char enemyBoard[BOARD_H][BOARD_W];
 
   Commands commandsArr[];
 
@@ -51,22 +57,22 @@ public:
   }
 
   void placeShip(char board[][11], Commands commands, int length) {
-    char numbersArray[] = {'a', 'O', '1', '2', '3', '4',
+    char numbersArray[] = {'*', '0', '1', '2', '3', '4',
                            '5', '6', '7', '8', '9'};
-    char lettersArray[] = {'a', 'a', 'b', 'c', 'd', 'e',
+    char lettersArray[] = {'*', 'a', 'b', 'c', 'd', 'e',
                            'f', 'g', 'h', 'i', 'j'};
 
-    char validXForLeft[7] = {'0', '1', '2', '3', '4', '5', '6'};
-    char validYForDown[7] = {'a', 'b', 'c', 'd', 'e', 'f', 'g'};
+    char validXForLeft[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+    char validYForDown[10] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
 
     bool validXL = false;
     bool validYD = false;
 
     if (commands.dir == 'l') {
-      validXL = Utils::checkCharArr(validXForLeft, 7, commands.x);
+      validXL = Utils::checkCharArr(validXForLeft, 11 - length, commands.x);
       validYD = true;
     } else {
-      validYD = Utils::checkCharArr(validYForDown, 7, commands.y);
+      validYD = Utils::checkCharArr(validYForDown, 11 - length, commands.y);
       validXL = true;
     }
     std::cout << "validation of placment " << validYD << "  " << validXL
@@ -76,9 +82,9 @@ public:
       if (commands.dir == 'l') {
         char placeXArray[length];
         int placeXArrayIndex = 0;
-        for (int i = 0; i < 10; i++) {
+        for (int i = 1; i < 11; i++) {
           if (lettersArray[i] == commands.y) {
-            for (int j = 0; j < 10; j++) {
+            for (int j = 1; j < 11; j++) {
               if (numbersArray[j] == commands.x) {
                 if (board[i][j] == 'O') {
                   std::cout << "PLACED SHIPS COLIDED\n";
@@ -87,7 +93,7 @@ public:
                 board[i][j] = 'O';
                 placeXArrayIndex++;
 
-              } else if (placeXArrayIndex != 0 && placeXArrayIndex < length) {
+              } else if (placeXArrayIndex != 0 && placeXArrayIndex <= length) {
                 if (board[i][j] == 'O') {
                   std::cout << "PLACED SHIPS COLIDED\n";
                   exit(1);
@@ -102,9 +108,9 @@ public:
 
         char placeYArray[length];
         int placeYArrayIndex = 0;
-        for (int i = 0; i < 10; i++) {
+        for (int i = 1; i < 11; i++) {
           if (numbersArray[i] == commands.x) {
-            for (int j = 0; j < 10; j++) {
+            for (int j = 1; j < 11; j++) {
               if (lettersArray[j] == commands.y) {
                 if (board[j][i] == 'O') {
                   std::cout << "PLACED SHIPS COLIDED\n";
@@ -113,7 +119,7 @@ public:
                 board[j][i] = 'O';
                 placeYArrayIndex++;
 
-              } else if (placeYArrayIndex != 0 && placeYArrayIndex < length) {
+              } else if (placeYArrayIndex != 0 && placeYArrayIndex <= length) {
                 if (board[j][i] == 'O') {
                   std::cout << "PLACED SHIPS COLIDED\n";
                   exit(1);
@@ -159,6 +165,9 @@ public:
 
         commands = utils.getCommands(command);
         // invoke a checking and parsing commmand
+
+        this->placeShip(board, commands, 3);
+        readBoard(board);
         break;
       case 2:
         std::cout << "chose the coordinates and the direction (d - down , l - "
@@ -167,6 +176,9 @@ public:
 
         commands = utils.getCommands(command);
         // invoke a checking and parsing commmand
+
+        this->placeShip(board, commands, 2);
+        readBoard(board);
         break;
 
       case 1:
@@ -175,8 +187,26 @@ public:
         std::cin >> command;
         commands = utils.getCommands(command);
         // invoke a checking and parsing commmand
+        this->placeShip(board, commands, 1);
+        readBoard(board);
         break;
       }
+    }
+  }
+
+  void gameLoop() {
+    while (true) {
+      std::cout << "\nYOURE BOARD \n";
+      readBoard(playerBoard);
+
+      std::cout << "\nENEMY BOARD \n";
+      readBoard(playerBoard);
+
+      std::cout << "INPUT STRIKE X COORDS :";
+      Strike strike;
+      std::cin >> strike.x;
+      std::cout << "INPUT STRIKE Y COORDS :";
+      std::cin >> strike.y;
     }
   }
 
@@ -184,6 +214,8 @@ public:
     makeBoard(playerBoard);
     readBoard(playerBoard);
     placeShipsLoop(playerBoard);
+    makeBoard(enemyBoard);
+    gameLoop();
   }
 };
 
