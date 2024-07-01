@@ -1,12 +1,8 @@
 #include "ships.hpp"
 #include "utils.hpp"
-#include <algorithm>
 #include <cstdlib>
-#include <cwchar>
 #include <iostream>
-#include <iterator>
 #include <string>
-#include <type_traits>
 
 struct Strike {
   char x;
@@ -25,6 +21,7 @@ public:
 
   char playerBoard[BOARD_H][BOARD_W];
   char enemyBoard[BOARD_H][BOARD_W];
+  char strikeBoard[BOARD_H][BOARD_W];
 
   Commands commandsArr[];
 
@@ -83,8 +80,8 @@ public:
       validYD = Utils::checkCharArr(validYForDown, 11 - length, commands.y);
       validXL = true;
     }
-    //std::cout << "validation of placment " << validYD << "  " << validXL
-    //          << "\n";
+    // std::cout << "validation of placment " << validYD << "  " << validXL
+    //           << "\n";
     if (validYD && validXL) {
 
       if (commands.dir == 'l') {
@@ -162,7 +159,7 @@ public:
     return true;
   }
 
-  void conditionaldExit(bool val) {
+  void conditionalExit(bool val) {
     if (!val) {
       exit(1);
     }
@@ -189,16 +186,16 @@ public:
           std::cin >> command;
           commands = utils.getCommands(command);
           validPlacement = this->placeShip(board, commands, 4);
-          conditionaldExit(validPlacement);
+          conditionalExit(validPlacement);
         } else if (userType == "enemy") {
           while (!validPlacement) {
-            //std::cout << "PLACED 4 \n";
+            // std::cout << "PLACED 4 \n";
             commands = utils.genRandomCommands();
             validPlacement = this->placeShip(board, commands, 4);
           }
         } else {
           std::cout << "INVALID USER TYPE";
-          conditionaldExit(false);
+          conditionalExit(false);
         }
         // invoke a checking and parsing commmand
         break;
@@ -212,14 +209,14 @@ public:
           this->placeShip(board, commands, 3);
         } else if (userType == "enemy") {
           while (!validPlacement) {
-            //std::cout << "PLACED 3\n";
+            // std::cout << "PLACED 3\n";
             commands = utils.genRandomCommands();
             validPlacement = this->placeShip(board, commands, 3);
           }
 
         } else {
           std::cout << "INVALID USER TYPE";
-          conditionaldExit(false);
+          conditionalExit(false);
         }
         break;
       case 2:
@@ -233,13 +230,13 @@ public:
         } else if (userType == "enemy") {
           while (!validPlacement) {
 
-            //std::cout <<  "PLACED 2\n";
+            // std::cout <<  "PLACED 2\n";
             commands = utils.genRandomCommands();
             validPlacement = this->placeShip(board, commands, 2);
           }
         } else {
           std::cout << "INVALID USER TYPE";
-          conditionaldExit(false);
+          conditionalExit(false);
         }
 
         break;
@@ -254,13 +251,13 @@ public:
           this->placeShip(board, commands, 1);
         } else if (userType == "enemy") {
           while (!validPlacement) {
-            //std::cout << "PLACED 1\n";
+            // std::cout << "PLACED 1\n";
             commands = utils.genRandomCommands();
             validPlacement = this->placeShip(board, commands, 1);
           }
         } else {
           std::cout << "INVALID USER TYPE";
-          conditionaldExit(false);
+          conditionalExit(false);
         }
         break;
       }
@@ -275,17 +272,23 @@ public:
 
   void gameLoop() {
     while (true) {
+      std::cout << "###########################################################"
+                   "##\n\n";
       std::cout << "\nYOURE BOARD \n";
       readBoard(playerBoard);
-
       std::cout << "\nENEMY BOARD \n";
       readBoard(enemyBoard);
+      std::cout << "\nSTRIKE BOARD \n";
+      readBoard(strikeBoard);
 
       std::cout << "INPUT STRIKE X COORDS :";
       Strike strike;
       std::cin >> strike.x;
       std::cout << "INPUT STRIKE Y COORDS :";
       std::cin >> strike.y;
+      conditionalExit(Utils::validateStrike(strike.x , strike.y));
+      //strike is valid
+
     }
   }
 
@@ -295,13 +298,12 @@ public:
     placeShipsLoop(playerBoard, "player");
     makeBoard(enemyBoard);
     placeShipsLoop(enemyBoard, "enemy");
-    readBoard(enemyBoard);
+    makeBoard(strikeBoard);
+    gameLoop();
   }
 };
 
 int main() {
-
   Game game;
-
   return 0;
 }

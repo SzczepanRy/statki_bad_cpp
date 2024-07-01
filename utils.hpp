@@ -1,10 +1,10 @@
 #include <algorithm>
+#include <chrono>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <string>
-#include <chrono>
 #include <random>
+#include <string>
 struct Commands {
   char x;
   char y;
@@ -24,7 +24,7 @@ public:
     Commands commands{
       x : ForLeft[(randomNumber(0, 9))],
       y : ForDown[(randomNumber(0, 9))],
-      dir : ForDirection[(randomNumber(0,1))]
+      dir : ForDirection[(randomNumber(0, 1))]
     };
 
     return commands;
@@ -34,7 +34,7 @@ public:
     return rng() % (ubound - lbound + 1) + lbound;
   }
 
-  int randomNumber(int min , int max) {
+  int randomNumber(int min, int max) {
     // Seed the RNG so it doesn't generate the same
     // numbers every time
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -43,8 +43,7 @@ public:
 
     // Generate a random number between 5 and 20,
     // inclusive
-    return randint(rng, min,max);
-
+    return randint(rng, min, max);
   }
 
   static bool checkCharArr(char *array, int size, char serchTerm) {
@@ -57,6 +56,17 @@ public:
     std::cout << "CHECK ARRAY FALED\n";
 
     return false;
+  }
+  static bool validateStrike(char x, char y) {
+    char ForLeft[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+    char ForDown[10] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
+    bool validX = checkCharArr(ForLeft, 10,x);
+    bool validY = checkCharArr(ForDown, 10,y);
+    if(validX && validY){
+      return true;
+    }
+    std::cout << "NOT A VALID STRIKE POSITION\n";
+    return  false;
   }
 
   bool vaildateCommand(std::string command) {
@@ -77,7 +87,7 @@ public:
 
     for (int i = 0; i < (int)command.size(); i++) {
       this->commands[i] = command[i];
-//      std::cout << "log form validation for  " << command[i] << "\n";
+      //      std::cout << "log form validation for  " << command[i] << "\n";
       if (i == 0) {
         for (int j = 1; j < 11; j++) {
           if (numbersArray[j] == command[i]) {
@@ -101,7 +111,7 @@ public:
       }
     }
     // chech if valid
-  //  std::cout << valid1 << "  " << valid2 << "  " << valid3 << "\n";
+    //  std::cout << valid1 << "  " << valid2 << "  " << valid3 << "\n";
     if (!valid1 || !valid2 || !valid3) {
       return false;
     }
@@ -115,9 +125,9 @@ public:
     valid = this->vaildateCommand(command);
 
     Commands commands;
-  //  std::cout << this->commands[0] << this->commands[1] << this->commands[2]
-   //           << "\n";
-   // std::cout << "\n";
+    //  std::cout << this->commands[0] << this->commands[1] << this->commands[2]
+    //           << "\n";
+    // std::cout << "\n";
     if (valid) {
       commands.x = this->commands[0];
       commands.y = this->commands[1];
